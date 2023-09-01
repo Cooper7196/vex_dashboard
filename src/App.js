@@ -1,15 +1,44 @@
 import React from 'react';
 import { Stage, Layer, Rect, Line } from 'react-konva';
 import './App.css';
-
-import TextBox from './Windows/TextBox';
+import components from './Windows/components';
 
 export const BLOCK_SNAP_SIZE = 40;
 export const GRID_START = { x: BLOCK_SNAP_SIZE * 6, y: 0 };
 
+
+function delWindow(windows, setWindows) {
+  console.log("delWindow")
+  const copyArr = [...windows];
+  copyArr.splice(-1);
+  setWindows(copyArr);
+}
+
 function App() {
+  const [windows, setWindows] = React.useState([]);
+
+
+
+  console.log(windows);
+  let icons = [];
+  let i = 0;
+  for (let key in components) {
+    icons.push(
+      React.createElement(components[key], {
+        x: BLOCK_SNAP_SIZE,
+        y: BLOCK_SNAP_SIZE + (i * BLOCK_SNAP_SIZE) * 4,
+        width: 4,
+        height: 4,
+        padding: 10,
+        windows: windows,
+        setWindows: setWindows,
+        delWindow: delWindow,
+      })
+    );
+    i++;
+  }
   return (
-    <Stage width={window.innerWidth} height={window.innerHeight}>
+    <Stage width={window.innerWidth} height={window.innerHeight} >
       <Layer>
         <Grid size={BLOCK_SNAP_SIZE} />
       </Layer>
@@ -27,10 +56,12 @@ function App() {
           width={BLOCK_SNAP_SIZE * 6}
           height={window.innerHeight}
         />
+
+        {icons}
       </Layer>
 
       <Layer>
-        <TextBox />
+        {windows}
       </Layer>
     </Stage >
   );

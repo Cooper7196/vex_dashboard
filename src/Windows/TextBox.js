@@ -1,18 +1,55 @@
 import React from 'react';
-import { Text } from 'react-konva';
+import { Text, Rect } from 'react-konva';
 import { Html } from 'react-konva-utils';
 
 import Window from '../Window';
-import { GRID_START } from '../App';
+import Icon from '../Icon';
 
 
-export default function TextBox() {
+
+
+
+// You can't have any HTML inside of an Icon
+export function TextBoxIcon({ x, y, width, height, padding, setWindows, windows, delWindow }) {
     return (
-        <Window x={GRID_START.x} y={GRID_START.y} width={4} height={4} padding={20} title={"TextBox"}>
+        <Icon x={x} y={y} width={width} height={height} padding={padding} title="TextBox" isIcon={true} window={TextBox} windows={windows} setWindows={setWindows} delWindow={delWindow}>
+            <TextBoxIconInternal />
+        </Icon>
+    );
+}
+
+function TextBox({ x, y, width, height, padding, delWindow, setWindows, windows }) {
+    return (
+        <Window x={x} y={y} width={width} height={height} padding={padding} title="TextBox" delWindow={delWindow} windows={windows} setWindows={setWindows}>
             <TextBoxInternal />
         </Window>
     );
 }
+
+
+function TextBoxIconInternal({ width, height }) {
+    return (<>
+        <Text
+            x={0}
+            y={height * 0.4}
+            width={width}
+            height={height}
+            fill="#fff"
+            fontSize={18}
+            align="center"
+            text={"Count: 0"}
+        />
+        <Rect
+            x={width * 0.125}
+            y={height * 0.63}
+            width={width * 0.75}
+            height={height * 0.33}
+            fill="#fff"
+        />
+    </>
+    );
+}
+
 
 function TextBoxInternal({ width, height }) {
     const [count, setCount] = React.useState(0);

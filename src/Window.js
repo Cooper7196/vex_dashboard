@@ -5,6 +5,7 @@ import { Text, Rect, Group, Circle } from 'react-konva';
 
 class Window extends React.Component {
 
+
     state = {
         x: this.props.x + this.props.padding,
         y: this.props.y + this.props.padding,
@@ -14,6 +15,15 @@ class Window extends React.Component {
         isScaling: false,
     };
 
+    componentDidMount() {
+        if (!this.props.isIcon) {
+            let roundedPos = this.roundPos(this.state);
+            this.setState({
+                x: roundedPos.x,
+                y: roundedPos.y,
+            });
+        }
+    }
     handleDragStart = (e) => {
         this.setState({
             isDragging: true,
@@ -40,7 +50,7 @@ class Window extends React.Component {
     };
 
     handleDblClick = (e) => {
-        console.log(e);
+        // this.props.delWindow(this.props.windows, this.props.setWindows);
     };
 
     cornerMouseOver = (e) => {
@@ -148,45 +158,47 @@ class Window extends React.Component {
     };
 
     render() {
-        const children = React.cloneElement(this.props.children, {
-            width: this.state.width,
-            height: this.state.height - BLOCK_SNAP_SIZE,
-        });
+        let children = this.props.children;
+        if (this.props.children) {
+            children = React.cloneElement(this.props.children, {
+                width: this.state.width,
+                height: this.state.height - BLOCK_SNAP_SIZE,
+            });
+        }
+
         return (
-            <>
-                <Group
-                    x={this.state.x}
-                    y={this.state.y}
-                    onDblClick={this.handleDblClick}
-                >
-                    {(this.state.isDragging || this.state.isScaling) && this.state.x > GRID_START.x && (
-                        <Rect
-                            x={Math.round((this.state.x - GRID_START.x) / (BLOCK_SNAP_SIZE * 4)) * (BLOCK_SNAP_SIZE * 4) + this.props.padding - this.state.x + GRID_START.x}
-                            y={Math.round((this.state.y - GRID_START.y) / (BLOCK_SNAP_SIZE * 4)) * (BLOCK_SNAP_SIZE * 4) + this.props.padding - this.state.y + GRID_START.y}
-                            fill="#444"
-                            width={Math.max(BLOCK_SNAP_SIZE * 4 - this.props.padding * 2, Math.round((this.state.width + this.props.padding) / (BLOCK_SNAP_SIZE * 4)) * (BLOCK_SNAP_SIZE * 4) - this.props.padding * 2)}
-                            height={Math.max(BLOCK_SNAP_SIZE * 4 - this.props.padding * 2, Math.round((this.state.height + this.props.padding) / (BLOCK_SNAP_SIZE * 4)) * (BLOCK_SNAP_SIZE * 4) - this.props.padding * 2)}
-                            opacity={0.5}
-                            stroke={"#0f0"}
-                            strokeWidth={2}
-                            dash={[20, 2]}
-                            cornerRadius={16}
-                        />
-                    )}
+            <><Group
+                x={this.state.x}
+                y={this.state.y}
+            >
+                {(this.state.isDragging || this.state.isScaling) && this.state.x > GRID_START.x && (
                     <Rect
-                        fill="#1C1C1C"
-                        width={this.state.width}
-                        height={this.state.height}
-                        shadowOffset={{ x: 2, y: 2 }}
-                        shadowBlur={5}
+                        x={Math.round((this.state.x - GRID_START.x) / (BLOCK_SNAP_SIZE * 4)) * (BLOCK_SNAP_SIZE * 4) + this.props.padding - this.state.x + GRID_START.x}
+                        y={Math.round((this.state.y - GRID_START.y) / (BLOCK_SNAP_SIZE * 4)) * (BLOCK_SNAP_SIZE * 4) + this.props.padding - this.state.y + GRID_START.y}
+                        fill="#444"
+                        width={Math.max(BLOCK_SNAP_SIZE * 4 - this.props.padding * 2, Math.round((this.state.width + this.props.padding) / (BLOCK_SNAP_SIZE * 4)) * (BLOCK_SNAP_SIZE * 4) - this.props.padding * 2)}
+                        height={Math.max(BLOCK_SNAP_SIZE * 4 - this.props.padding * 2, Math.round((this.state.height + this.props.padding) / (BLOCK_SNAP_SIZE * 4)) * (BLOCK_SNAP_SIZE * 4) - this.props.padding * 2)}
+                        opacity={0.5}
+                        stroke={"#0f0"}
+                        strokeWidth={2}
+                        dash={[20, 2]}
                         cornerRadius={16}
                     />
-                    <Group x={0} y={BLOCK_SNAP_SIZE}>
-                        {children}
-                    </Group>
+                )}
+                <Rect
+                    fill="#1C1C1C"
+                    width={this.state.width}
+                    height={this.state.height}
+                    shadowOffset={{ x: 2, y: 2 }}
+                    shadowBlur={5}
+                    cornerRadius={16}
+                />
+                <Group x={0} y={BLOCK_SNAP_SIZE}>
+                    {children}
                 </Group>
+            </Group>
                 <Group x={this.state.x}
-                    y={this.state.y} draggable={!this.state.isScaling}
+                    y={this.state.y} draggable={!this.state.isScaling && !this.props.isIcon}
                     onDragStart={this.handleDragStart}
                     onDragEnd={this.handleDragEnd}
                     onDragMove={this.handleDragMove}>
@@ -199,15 +211,22 @@ class Window extends React.Component {
                     <Text x={35} y={10} text={this.props.title} fill="#fff" fontSize={20} />
                     <GrabbableIcon x={10} y={10} width={6} height={6} padding={1} />
                 </Group>
-                {/* Corner Drag Circles */}
-                <Circle draggable id="brCorner" x={this.state.x + this.state.width} y={this.state.y + this.state.height} radius={20} onDragEnd={this.cornerDragEnd} onDragStart={this.cornerDragStart} onDragMove={this.cornerDragMove} onClick={this.handleDblClick} onMouseOver={this.cornerMouseOver} onMouseOut={this.cornerMouseOut} />
-                <Circle draggable id="trCorner" x={this.state.x + this.state.width} y={this.state.y} radius={20} onDragEnd={this.cornerDragEnd} onDragStart={this.cornerDragStart} onDragMove={this.cornerDragMove} onClick={this.handleDblClick} onMouseOver={this.cornerMouseOver} onMouseOut={this.cornerMouseOut} />
-                <Circle draggable id="blCorner" x={this.state.x} y={this.state.y + this.state.height} radius={20} onDragEnd={this.cornerDragEnd} onDragStart={this.cornerDragStart} onDragMove={this.cornerDragMove} onClick={this.handleDblClick} onMouseOver={this.cornerMouseOver} onMouseOut={this.cornerMouseOut} />
-                <Circle draggable id="tlCorner" x={this.state.x} y={this.state.y} radius={20} onDragEnd={this.cornerDragEnd} onDragStart={this.cornerDragStart} onDragMove={this.cornerDragMove} onClick={this.handleDblClick} onMouseOver={this.cornerMouseOver} onMouseOut={this.cornerMouseOut} />
+                {
+                    (!this.props.isIcon && <>
+                        <Circle draggable id="brCorner" x={this.state.x + this.state.width} y={this.state.y + this.state.height} radius={20} onDragEnd={this.cornerDragEnd} onDragStart={this.cornerDragStart} onDragMove={this.cornerDragMove} onClick={this.handleDblClick} onMouseOver={this.cornerMouseOver} onMouseOut={this.cornerMouseOut} />
+                        <Circle draggable id="trCorner" x={this.state.x + this.state.width} y={this.state.y} radius={20} onDragEnd={this.cornerDragEnd} onDragStart={this.cornerDragStart} onDragMove={this.cornerDragMove} onClick={this.handleDblClick} onMouseOver={this.cornerMouseOver} onMouseOut={this.cornerMouseOut} />
+                        <Circle draggable id="blCorner" x={this.state.x} y={this.state.y + this.state.height} radius={20} onDragEnd={this.cornerDragEnd} onDragStart={this.cornerDragStart} onDragMove={this.cornerDragMove} onClick={this.handleDblClick} onMouseOver={this.cornerMouseOver} onMouseOut={this.cornerMouseOut} />
+                        <Circle draggable id="tlCorner" x={this.state.x} y={this.state.y} radius={20} onDragEnd={this.cornerDragEnd} onDragStart={this.cornerDragStart} onDragMove={this.cornerDragMove} onClick={this.handleDblClick} onMouseOver={this.cornerMouseOver} onMouseOut={this.cornerMouseOut} />
+                    </>)
+                }
             </>
         );
     }
 }
+
+Window.defaultProps = {
+    isIcon: false,
+};
 
 function GrabbableIcon({ x, y, width, height, padding }) {
     let grid = [];
